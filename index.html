@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="src/css/main.css">
+    <script src="src/js/FormHandler.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Widget Handler</title>
+
+</head>
+<body>
+
+    <div class="main-body">
+        <div class="body-header">
+            <h1>Welcome, how many Widgets would you like?</h1>
+        </div>
+        <div class="body-input">
+            <form action="src/php/WidgetRequest.php" method="GET">
+            <input id="widgetCount" placeholder="Tell us here!" type="number">
+                <button class="btn-main"><input type="submit"></button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
