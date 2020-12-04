@@ -31,10 +31,6 @@ class WidgetCalculator
         }
     }
 
-    private function debug($tring)
-    {
-        echo $tring . '    ^    ';
-    }
 
     /**
      * Setup main values for the calculator.
@@ -69,7 +65,6 @@ class WidgetCalculator
                 }
                 if($this->getCurrentLeft()===0) goto terminateloop; //Just to not bother going through the logic.
                 $currentPacket = $flippedSet[$i]; //So begin at 5000
-                //$this->debug("current packet is " . $currentPacket);
                 if($currentPacket <= $this->getCurrentLeft()) //We know we can remove it from the total.
                 {
                     array_push($this->orderSet, $currentPacket); //Push those packets
