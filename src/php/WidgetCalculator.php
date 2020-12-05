@@ -13,6 +13,9 @@ class WidgetCalculator
     private $widgetSet; //array of accepted widget packs
     private $orderSet; //Set of the final order.
 
+    private $minimumWidgets;
+    private $maximumWidgets;
+
     private $currentWidgetsLeft; //The value we'll be modifying.
 
     public function __construct($widgetsRequested)
@@ -41,6 +44,8 @@ class WidgetCalculator
         $this->currentWidgetsLeft = $widgetsRequested;
         $this->orderSet = array();
         $this->widgetSet = array(250, 500, 1000, 2000, 5000);
+        $this->minimumWidgets = $this->widgetSet[0];
+        $this->maximumWidgets = $this->widgetSet[count($this->widgetSet)-1];
         sort($this->widgetSet); //PHP sometimes decides not to store things the way we put them, plus I gotta flip these later
     }
 
@@ -54,7 +59,7 @@ class WidgetCalculator
         {
             for($i = 0 ; $i < count($flippedSet) ; $i++) //Lets go through these sets, got to remember it could be ANY number.
             {
-                if($this->getCurrentLeft() <= 250)
+                if($this->getCurrentLeft() <= $this->getMinimumWidgets())
                 { //just get this out the way shall we.
                     if(!$this->getCurrentLeft() === 0)
                     {
@@ -76,7 +81,7 @@ class WidgetCalculator
                         continue;
                     }
                 } else {
-                    if($this->getCurrentLeft() < 250) { //It must be but lets check
+                    if($this->getCurrentLeft() < $this->getMinimumWidgets()) { //It must be but lets check
                         array_push($this->orderSet, $this->widgetSet[0]);
                         $this->decrementCurrentLeft($this->widgetSet[0]); //So it'll break.
                         goto terminateloop;
@@ -126,6 +131,16 @@ class WidgetCalculator
     private function getCurrentLeft()
     {
         return $this->currentWidgetsLeft;
+    }
+
+    private function getMinimumWidgets()
+    {
+        return $this->minimumWidgets;
+    }
+
+    private function getMaximumWidgets()
+    {
+        return $this->maximumWidgets;
     }
 
     private function decrementCurrentLeft($quantity)
