@@ -42,8 +42,8 @@ class WidgetCalculator
     {
         $this->requestedWidgets = $widgetsRequested;
         $this->currentWidgetsLeft = $widgetsRequested;
-        $this->orderSet = array();
-        $this->widgetSet = array(250, 500, 1000, 2000, 5000);
+        $this->orderSet = [];
+        $this->widgetSet = [250, 500, 1000, 2000, 5000];
         $this->minimumWidgets = $this->widgetSet[0];
         $this->maximumWidgets = $this->widgetSet[count($this->widgetSet)-1];
         sort($this->widgetSet); //PHP sometimes decides not to store things the way we put them, plus I gotta flip these later
@@ -55,7 +55,7 @@ class WidgetCalculator
     private function calculateWidgets()
     {
         $flippedSet = array_reverse($this->widgetSet); //Reverse, otherwise we'll end up giving too much stuff away.
-        while($this->getCurrentLeft() > 0) //Was going to use a for loop but that was silly.
+        while($this->getCurrentLeft() >= 0) //Was going to use a for loop but that was silly.
         {
             for($i = 0 ; $i < count($flippedSet) ; $i++) //Lets go through these sets, got to remember it could be ANY number.
             {
@@ -65,10 +65,9 @@ class WidgetCalculator
                     {
                         array_push($this->orderSet, $this->widgetSet[0]);
                         $this->currentWidgetsLeft = 0;
-                        goto terminateloop;
                     }
                 }
-                if($this->getCurrentLeft()===0) goto terminateloop; //Just to not bother going through the logic.
+                if($this->getCurrentLeft()===0) return; //Just to not bother going through the logic.
                 $currentPacket = $flippedSet[$i]; //So begin at 5000
                 if($currentPacket <= $this->getCurrentLeft()) //We know we can remove it from the total.
                 {
@@ -84,12 +83,11 @@ class WidgetCalculator
                     if($this->getCurrentLeft() < $this->getMinimumWidgets()) { //It must be but lets check
                         array_push($this->orderSet, $this->widgetSet[0]);
                         $this->decrementCurrentLeft($this->widgetSet[0]); //So it'll break.
-                        goto terminateloop;
-                    }
+                        return;
+                }
                 }
             }
         }
-        terminateloop:
     }
 
     /**
