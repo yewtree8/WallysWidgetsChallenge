@@ -2,25 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="src/css/main.css">
-    <script src="src/js/FormHandler.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <title>Widget Handler</title>
 
 </head>
 <body>
+    <div class="container">
+        <div class=”row”>
+            <div class=”col-12 align-self-center”>
+                <div class="main-body">
+                    <div class="body-header">
+                        <h1>Welcome, how many widgets would you like.</h1>
+                    </div>
+                    <div class="body-input">
+                        <input id="widgetCount" placeholder="Tell us here !" type="text">
+                        <button id="btnWidgetSubmit" class="btn-main">Calculate</button>
+                    </div>
+                    <div class="body-output">
+                        <div class="body-output-inner">
+                            <div id="requestOutput"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <div class="main-body">
-        <div class="body-header">
-            <h1>Welcome, how many Widgets would you like?</h1>
         </div>
-        <div class="body-input">
-            <form action="src/php/WidgetRequest.php" method="GET">
-            <input id="widgetCount" placeholder="Tell us here!" type="number">
-                <button class="btn-main"><input type="submit"></button>
-            </form>
-        </div>
+
     </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="src/js/FormHandler.js"></script>
 
 </body>
 </html>

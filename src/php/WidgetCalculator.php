@@ -23,7 +23,7 @@ class WidgetCalculator
         $this->init($widgetsRequested);
         $this->calculateWidgets();
         $this->trimPacks();
-        $this->displayOrderSets();
+        //$this->displayOrderSets();
     }
 
     private function displayOrderSets()
@@ -84,7 +84,7 @@ class WidgetCalculator
                         array_push($this->orderSet, $this->widgetSet[0]);
                         $this->decrementCurrentLeft($this->widgetSet[0]); //So it'll break.
                         return;
-                }
+                    }
                 }
             }
         }
@@ -154,6 +154,6 @@ class WidgetCalculator
 
 }
 
-$testValue = 251;
-$calculator = new WidgetCalculator($testValue);
+//$testValue = 501;
+//$calculator = new WidgetCalculator($testValue);
 
