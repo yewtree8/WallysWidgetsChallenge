@@ -149,10 +149,8 @@ class WidgetCalculator
                         {
                             $packAttempt = $trimmedKey * $quantity;
                             if($packAttempt === $currentTarget) {
-                                $this->debug("Packing up " . $trimmedKey . " into " . $packAttempt . ' quantity of ' . $quantity);
                                 sort($this->orderSet); //Need it in order to take em off
                                 for($f = 0 ; $f < $quantity ; $f++) {
-                                    $this->debug("Removing " . $trimmedKey . ' from the order set');
                                     unset($this->orderSet[$f]);
                                 }
                                 $this->addToOrderSet($packAttempt);
