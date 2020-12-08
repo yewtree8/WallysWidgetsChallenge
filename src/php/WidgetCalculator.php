@@ -9,6 +9,7 @@
  */
 class WidgetCalculator
 {
+
     private $requestedWidgets; //Requested widgets by the user.
     private $widgetSet; //array of accepted widget packs
     private $orderSet; //Set of the final order.
@@ -16,14 +17,20 @@ class WidgetCalculator
     private $minimumWidgets;
     private $maximumWidgets;
 
+    private static $KEY_D = ":";
+
+    private $packSets;
+
     private $currentWidgetsLeft; //The value we'll be modifying.
 
     public function __construct($widgetsRequested)
     {
         $this->init($widgetsRequested);
         $this->calculateWidgets();
-        $this->trimPacks();
-        //$this->displayOrderSets();
+        $this->beginFancyTrim();
+        $this->displayOrderSets();
+        //$this->trimPacks();
+
     }
 
     private function displayOrderSets()
@@ -35,6 +42,11 @@ class WidgetCalculator
     }
 
 
+    private function debug($val)
+    {
+        echo $val . '<br>';
+    }
+
     /**
      * Setup main values for the calculator.
      */
@@ -44,6 +56,8 @@ class WidgetCalculator
         $this->currentWidgetsLeft = $widgetsRequested;
         $this->orderSet = [];
         $this->widgetSet = [250, 500, 1000, 2000, 5000];
+        $this->packSets = []; //Key val for trimming.
+        foreach($this->widgetSet as $widget) $this->packSets[$widget . self::$KEY_D] = 0;
         $this->minimumWidgets = $this->widgetSet[0];
         $this->maximumWidgets = $this->widgetSet[count($this->widgetSet)-1];
         sort($this->widgetSet); //PHP sometimes decides not to store things the way we put them, plus I gotta flip these later
@@ -63,7 +77,7 @@ class WidgetCalculator
                 { //just get this out the way shall we.
                     if(!$this->getCurrentLeft() === 0)
                     {
-                        array_push($this->orderSet, $this->widgetSet[0]);
+                        $this->addToOrderSet($this->getMinimumWidgets());
                         $this->currentWidgetsLeft = 0;
                     }
                 }
@@ -71,7 +85,7 @@ class WidgetCalculator
                 $currentPacket = $flippedSet[$i]; //So begin at 5000
                 if($currentPacket <= $this->getCurrentLeft()) //We know we can remove it from the total.
                 {
-                    array_push($this->orderSet, $currentPacket); //Push those packets
+                    $this->addToOrderSet($currentPacket);
                     $this->decrementCurrentLeft($currentPacket);
                     //We gotta check though, it could be an input of 10k
                     if($this->getCurrentLeft() >= $currentPacket)
@@ -81,8 +95,8 @@ class WidgetCalculator
                     }
                 } else {
                     if($this->getCurrentLeft() < $this->getMinimumWidgets()) { //It must be but lets check
-                        array_push($this->orderSet, $this->widgetSet[0]);
-                        $this->decrementCurrentLeft($this->widgetSet[0]); //So it'll break.
+                        $this->addToOrderSet($this->getMinimumWidgets());
+                        $this->decrementCurrentLeft($this->getMinimumWidgets()); //So it'll break.
                         return;
                     }
                 }
@@ -91,40 +105,89 @@ class WidgetCalculator
     }
 
     /**
-     * May I just say that I had a eurika moment until you threw that lovely test case there..
+     * Adds to order set, also creates packer.
      */
-    private function trimPacks()
+    private function addToOrderSet($toAdd)
     {
-        $trimming = true;
-        $changed = false;
-        while($trimming)
+        array_push($this->orderSet, $toAdd);
+        $this->debug("tried to add");
+        $targetKey = $this->packKey($toAdd);
+        //Lets pack these together
+        foreach($this->packSets as $widgetPack => $quantity)
         {
-            $newSet = array_reverse($this->orderSet); //Need these in acending order now.
-            $finalArray = $newSet;
-            for($i = 0 ; $i < count($newSet) ; $i++)//loop over the new set.
-            {
-                if($i!=count($newSet)-1){ //Not at the end of the array
-                    $currentValue = $newSet[$i]; //This value
-                    $nextValue = $newSet[$i+1]; //Next value.
-                    $total = $currentValue + $nextValue; //The combined values
-                    foreach($this->widgetSet as $widget)
-                    {
-                        if(($currentValue < $widget) && ($widget === $total)){ //We can trim.
-                            unset($finalArray[$i]); unset($finalArray[$i+1]); //unset the last two values we added together.
-                            array_push($finalArray, $widget); //push it to the final array.
-                            sort($finalArray);
-                            $changed = true; //Let it know it's been modified.
-                            break;
-                        }
-                    }
-                }
+            if($widgetPack === $targetKey) {
+                $newQuantity = $quantity + 1;
+                $this->packSets[$widgetPack] = $newQuantity;
+                break;
             }
-            $trimming = false;
         }
-
-        if($changed) $this->orderSet = $finalArray;
     }
 
+    private function beginFancyTrim()
+    {
+        $trimming = true;
+       do {
+            $trimmableTarget = [];
+            foreach($this->packSets as $widget => $quantity)
+            {
+                if($quantity > 1) { //It's trimmable
+                    $this->debug($widget . ' is trimmable');
+                    $trimmableTarget[$widget] = $quantity;
+                } else {continue;}
+            }
+
+            if(count($trimmableTarget)<=0) $trimming = false; //Can't trim.
+
+            $this->debug("It can trim");
+
+            $widgetClone = $this->widgetSet;
+            sort($widgetClone);
+            array_reverse($widgetClone); //From top to bottom.
+            for($i = 0 ; $i <= count($this->widgetSet); $i++)
+            {
+                $currentTarget = $this->widgetSet[$i];
+                foreach($trimmableTarget as $widgetPack => $quantity) {
+                    $trimmedKey = $this->trimPackKey($widgetPack);
+                    $fullTotal = $trimmedKey * $quantity;
+                    if($fullTotal >= $currentTarget) {
+                        //Can assume it can be trimmed.
+                        for($k = $quantity ; $k > 0 ; $k--) //Go backwards to trim the first
+                        {
+                            $doSet = false;
+                            $packAttempt = $trimmedKey * $quantity;
+                            if($packAttempt === $currentTarget) {
+                                $this->debug("Packing up " . $trimmedKey . " into " . $packAttempt);
+                                for($f = 0 ; $f < $quantity ; $f++) {
+                                    for($j = 0 ; $j < count($this->orderSet); $j++) {
+                                        if($this->orderSet[$j]===$currentTarget) {
+                                            $this->debug("Trying to set");
+                                            unset($this->orderSet[$j]);
+                                            $doSet = true;
+                                        }
+                                    }
+
+                                }
+                            }
+                            if($doSet) {
+                                array_push($this->orderSet, $packAttempt);
+                            }
+                        }
+                    }else {
+                        continue; //No point going over
+                        }
+                }
+            }
+
+            $trimming = false;
+
+       }while($trimming);
+    }
+
+
+    private function shufflePackFromSet($widgetToDecrement, $widgetPackKeyToIncrement, $incrementQuantity)
+    {
+
+    }
 
     private function getCurrentLeft()
     {
@@ -149,6 +212,17 @@ class WidgetCalculator
     public function getOrderSet()
     {
         return $this->orderSet;
+    }
+
+
+    private function packKey($val)
+    {
+        return $val . self::$KEY_D;
+    }
+
+    private function trimPackKey($keyVal)
+    {
+        return str_replace(self::$KEY_D, '', $keyVal);
     }
 
 

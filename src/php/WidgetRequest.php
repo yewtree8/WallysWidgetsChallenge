@@ -3,9 +3,9 @@ include ('WidgetCalculator.php');
 if($_GET['widgetCount']) {
     $calculator = new WidgetCalculator($_GET['widgetCount']);
     $orderSet = $calculator->getOrderSet();
-    $toReturn = 'You are given the packs: <br>';
+    $toReturn = 'You will receive the these packs for your order: <br>';
     foreach($orderSet as $order) {
         $toReturn .= $order . ', ';
     }
-    echo '<span>' . $toReturn . '</span>';
+    //echo '<span>' . $toReturn . '</span>';
 }
