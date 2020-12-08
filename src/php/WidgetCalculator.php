@@ -29,8 +29,6 @@ class WidgetCalculator
         $this->calculateWidgets();
         $this->beginFancyTrim();
         $this->displayOrderSets();
-        //$this->trimPacks();
-
     }
 
     private function displayOrderSets()
@@ -110,7 +108,6 @@ class WidgetCalculator
     private function addToOrderSet($toAdd)
     {
         array_push($this->orderSet, $toAdd);
-        $this->debug("tried to add");
         $targetKey = $this->packKey($toAdd);
         //Lets pack these together
         foreach($this->packSets as $widgetPack => $quantity)
@@ -131,14 +128,11 @@ class WidgetCalculator
             foreach($this->packSets as $widget => $quantity)
             {
                 if($quantity > 1) { //It's trimmable
-                    $this->debug($widget . ' is trimmable');
                     $trimmableTarget[$widget] = $quantity;
                 } else {continue;}
             }
 
             if(count($trimmableTarget)<=0) $trimming = false; //Can't trim.
-
-            $this->debug("It can trim");
 
             $widgetClone = $this->widgetSet;
             sort($widgetClone);
@@ -153,40 +147,28 @@ class WidgetCalculator
                         //Can assume it can be trimmed.
                         for($k = $quantity ; $k > 0 ; $k--) //Go backwards to trim the first
                         {
-                            $doSet = false;
                             $packAttempt = $trimmedKey * $quantity;
                             if($packAttempt === $currentTarget) {
-                                $this->debug("Packing up " . $trimmedKey . " into " . $packAttempt);
+                                $this->debug("Packing up " . $trimmedKey . " into " . $packAttempt . ' quantity of ' . $quantity);
+                                sort($this->orderSet); //Need it in order to take em off
                                 for($f = 0 ; $f < $quantity ; $f++) {
-                                    for($j = 0 ; $j < count($this->orderSet); $j++) {
-                                        if($this->orderSet[$j]===$currentTarget) {
-                                            $this->debug("Trying to set");
-                                            unset($this->orderSet[$j]);
-                                            $doSet = true;
-                                        }
-                                    }
-
+                                    $this->debug("Removing " . $trimmedKey . ' from the order set');
+                                    unset($this->orderSet[$f]);
                                 }
-                            }
-                            if($doSet) {
-                                array_push($this->orderSet, $packAttempt);
+                                $this->addToOrderSet($packAttempt);
+                                if($fullTotal <= $packAttempt) {break;} else { continue;}
+                                //To stop from over looping when unnesesary.
                             }
                         }
                     }else {
                         continue; //No point going over
-                        }
+                    }
                 }
             }
 
             $trimming = false;
 
        }while($trimming);
-    }
-
-
-    private function shufflePackFromSet($widgetToDecrement, $widgetPackKeyToIncrement, $incrementQuantity)
-    {
-
     }
 
     private function getCurrentLeft()
@@ -230,4 +212,3 @@ class WidgetCalculator
 
 //$testValue = 501;
 //$calculator = new WidgetCalculator($testValue);
-
