@@ -28,6 +28,7 @@ class WidgetCalculator
         $this->init($widgetsRequested);
         $this->calculateWidgets();
         $this->beginFancyTrim();
+        $this->beginStackedTrim();
         $this->displayOrderSets();
     }
 
@@ -114,7 +115,7 @@ class WidgetCalculator
             {
                 $currentTarget = $this->widgetSet[$i];
                 foreach($this->packSets as $widgetPack => $quantity) {
-                    if($quantity<=0)continue;
+                    if($quantity<=0) continue;
                     $trimmedKey = $this->trimPackKey($widgetPack);
                     $fullTotal = number_format($trimmedKey) * $quantity;
                     $remainderQuantity = $fullTotal; //The remainder of the pack.
@@ -139,12 +140,40 @@ class WidgetCalculator
                     }
                 }
             }
-
+            //Package multis up
             $trimming = false;
 
        }while($trimming);
     }
 
+
+    /*
+     * As you want me to suffer.
+     */
+    private function beginStackedTrim()
+    {
+        $toBeCombined = [];
+        $currentTotal = 0;
+        for($i = count($this->orderSet); $i >= 0 ; $i--) //let's go backwards.
+        {
+            $currentPacket = $this->orderSet[$i];
+            if($currentPacket !== $this->getMaximumWidgets()) //can't pack up 5000
+            {
+                $currentTotal += $currentPacket;
+                $toBeCombined[$currentPacket] = $i; //Need to make note of the index to remove it.
+                if($currentTotal === $this->getMaximumWidgets()){
+                    for($f = 0 ; $f < count($toBeCombined); $f++)
+                    {
+                        $current = $toBeCombined[$f];
+                        $this->removeFromOrderSet($current, $f);
+                    }
+                    $this->addToOrderSet($this->maximumWidgets);
+                    $currentTotal = 0;
+                    $toBeCombined = [];
+                }
+            }
+        }
+    }
 
     /**
      * Adds to order set, also creates packer.
