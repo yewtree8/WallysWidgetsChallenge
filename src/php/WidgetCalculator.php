@@ -102,6 +102,50 @@ class WidgetCalculator
         }
     }
 
+    private function beginFancyTrim()
+    {
+        $trimming = true;
+       do {
+            if(!$this->worthTrimming()) $trimming = false;
+            $widgetClone = $this->widgetSet;
+            sort($widgetClone);
+            array_reverse($widgetClone); //From top to bottom.
+            for($i = 0 ; $i <= count($this->widgetSet); $i++)
+            {
+                $currentTarget = $this->widgetSet[$i];
+                foreach($this->packSets as $widgetPack => $quantity) {
+                    if($quantity<=0)continue;
+                    $trimmedKey = $this->trimPackKey($widgetPack);
+                    $fullTotal = number_format($trimmedKey) * $quantity;
+                    $remainderQuantity = $fullTotal; //The remainder of the pack.
+                    if($fullTotal === $currentTarget) {
+                        //Can assume it can be trimmed.
+                        for($k = $quantity ; $k > 0 ; $k--) //Go backwards to trim the first
+                        {
+                            $remainderQuantity = $remainderQuantity - $quantity;
+                            if($fullTotal === $currentTarget) {
+                                sort($this->orderSet); //Need it in order to take em off
+                                for($f = 0 ; $f < $quantity ; $f++) {
+                                    $this->removeFromOrderSet($widgetPack, $f);
+                                }
+                                $this->addToOrderSet($fullTotal);
+                                sort($this->orderSet);
+                                if($fullTotal >= $remainderQuantity) {break;} else { continue;}
+                                //To stop from over looping when unnesesary.
+                            }
+                        }
+                    }else {
+                        break; //No point going over
+                    }
+                }
+            }
+
+            $trimming = false;
+
+       }while($trimming);
+    }
+
+
     /**
      * Adds to order set, also creates packer.
      */
@@ -120,54 +164,31 @@ class WidgetCalculator
         }
     }
 
-    private function beginFancyTrim()
+    private function removeFromOrderSet($toRemove, $index)
     {
-        $trimming = true;
-       do {
-            $trimmableTarget = [];
-            foreach($this->packSets as $widget => $quantity)
-            {
-                if($quantity > 1) { //It's trimmable
-                    $trimmableTarget[$widget] = $quantity;
-                } else {continue;}
+        unset($this->orderSet[$index]);
+        $toRemove = (is_numeric($toRemove)) ? $this->packKey($toRemove) : $toRemove;
+        foreach($this->packSets as $widgetPack => $quantity)
+        {
+            if($widgetPack === $toRemove) {
+                $newQuantity = $quantity - 1;
+                $this->packSets[$widgetPack] = $newQuantity;
+                break;
             }
-
-            if(count($trimmableTarget)<=0) $trimming = false; //Can't trim.
-
-            $widgetClone = $this->widgetSet;
-            sort($widgetClone);
-            array_reverse($widgetClone); //From top to bottom.
-            for($i = 0 ; $i <= count($this->widgetSet); $i++)
-            {
-                $currentTarget = $this->widgetSet[$i];
-                foreach($trimmableTarget as $widgetPack => $quantity) {
-                    $trimmedKey = $this->trimPackKey($widgetPack);
-                    $fullTotal = $trimmedKey * $quantity;
-                    if($fullTotal >= $currentTarget) {
-                        //Can assume it can be trimmed.
-                        for($k = $quantity ; $k > 0 ; $k--) //Go backwards to trim the first
-                        {
-                            $packAttempt = $trimmedKey * $quantity;
-                            if($packAttempt === $currentTarget) {
-                                sort($this->orderSet); //Need it in order to take em off
-                                for($f = 0 ; $f < $quantity ; $f++) {
-                                    unset($this->orderSet[$f]);
-                                }
-                                $this->addToOrderSet($packAttempt);
-                                if($fullTotal <= $packAttempt) {break;} else { continue;}
-                                //To stop from over looping when unnesesary.
-                            }
-                        }
-                    }else {
-                        continue; //No point going over
-                    }
-                }
-            }
-
-            $trimming = false;
-
-       }while($trimming);
+        }
     }
+
+    private function worthTrimming()
+    {
+        foreach($this->packSets as $widget => $quantity)
+        {
+           if($quantity % 2 == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     private function getCurrentLeft()
     {
@@ -202,7 +223,7 @@ class WidgetCalculator
 
     private function trimPackKey($keyVal)
     {
-        return str_replace(self::$KEY_D, '', $keyVal);
+        return number_format(str_replace(self::$KEY_D, '', $keyVal));
     }
 
 
